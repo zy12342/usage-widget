@@ -1,0 +1,60 @@
+{
+  "name": "@mark.zy/usage-widget",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A personal-share sidebar account badge: balance, bonus credit and current model, with ruby/amber/jade/gold gemstone tiers for a VIP feel. Shared as-is — please be patient if something is off.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "account",
+    "balance",
+    "bonus",
+    "sidebar",
+    "widget",
+    "ui"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zy12342/usage-widget.git"
+  },
+  "homepage": "https://github.com/zy12342/usage-widget#readme",
+  "bugs": {
+    "url": "https://github.com/zy12342/usage-widget/issues"
+  },
+  "engines": {
+    "dsh": ">=0.2.0-0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "SECURITY.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  }
+}
