@@ -1,6 +1,6 @@
-# Account Badge for DeepSeek Harness
+# Account Balance Quick View for DeepSeek Harness
 
-A small sidebar badge that shows your DeepSeek account balance — click it for balance, bonus credit, current model and the platform usage shortcut. Low balances are highlighted.
+A quick balance viewer for DeepSeek Harness — good news for the balance-anxious. Click the sidebar badge for balance, bonus credit, current model and the platform usage shortcut; low balances are highlighted.
 
 > Formerly a context-usage widget. The Harness now renders its own context meter
 > below the composer and token-usage pills in the composer dock, so this widget
