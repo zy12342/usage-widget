@@ -16,7 +16,7 @@ A small sidebar badge that shows your DeepSeek account balance — click it for 
 
 ## What it shows
 
-- **Sidebar badge** — the whale mark plus the current balance next to the settings button (in the narrow rail only the whale). The whale and amount are colored by balance tier: red / orange / green / gold.
+- **Sidebar badge** — the whale mark plus the current balance next to the settings button (in the narrow rail only the whale). The whale and amount are rendered with balance-tier textures: ruby (<10), amber (10–29.99), jade (30–99.99), metallic gold (>=100).
 - **Popover** — click the badge for:
   - balance (large),
   - a low-balance warning when below 10,
@@ -97,7 +97,7 @@ Or disable/remove it in Settings → Plugins.
 
 ## 中文说明
 
-- **功能**：侧边栏底部显示账户余额；点开可看余额、赠送额度、当前模型和平台用量入口；余额低于阈值（¥10 / $1）时数字变琥珀色提醒。
+- **功能**：侧边栏底部显示账户余额；点开可看余额、赠送额度、当前模型和平台用量入口；余额按档位呈现质感：<10 红宝石（并显示余额偏低警告）、10–30 琥珀、30–100 翡翠、≥100 黄金。
 - **说明**：上下文占用和 token 用量由 DSH 自带的输入框下方指标显示，本插件不再重复。
 - **数据**：全部来自 DSH 本地的模型投影和 DSH 自带的账户服务，不联网上传、不写本地存储、不读取任何密钥。
 - **安装**：插件管理器安装 `@mark.zy/usage-widget`，装完**完全退出 DSH 再打开**。
