@@ -4,7 +4,7 @@ This document describes what the plugin can and cannot access, and how to report
 
 ## Scope
 
-`@mark.zy/usage-widget` is a **client-side, display-only** DeepSeek Harness plugin. It reads data that DSH already exposes to the Web client and renders it in the sidebar. It does not run a server, spawn processes, or modify DSH behavior.
+`@mark.zy/usage-widget` has a display-only Web client and a small host half. The client reads data DSH already exposes and renders the sidebar badge/popover; the host fetches only public price/holiday pages for the pricing-period badge. It spawns no processes and modifies no DSH behavior.
 
 ## Data access
 
@@ -19,7 +19,8 @@ The plugin does **not** read API keys, tokens, passwords, cookies, local storage
 
 ## Network
 
-- The plugin itself makes **no network requests** (no `fetch`, `XMLHttpRequest`, WebSocket, image beacons or telemetry).
+- The **client** makes no external network requests (no `fetch`, `XMLHttpRequest`, WebSocket, image beacons or telemetry); it calls only the bundle-local `/usage-widget/api/pricing` route.
+- The **host** fetches `https://api-docs.deepseek.com/.../pricing/` and `https://timor.tech/api/holiday/year/<year>` (public pages, no credentials, no account data). Responses are parsed in memory only.
 - Balance data is fetched by DSH's own client services, not by this plugin.
 - The only outbound navigation is the "Platform usage" link. It is rendered only when it is a plain `http:`/`https:` URL, and it opens with `rel="noopener noreferrer"`.
 

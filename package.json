@@ -1,8 +1,8 @@
 {
   "name": "@mark.zy/usage-widget",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
-  "description": "A personal-share quick balance viewer for DeepSeek Harness — good news for the balance-anxious: balance, bonus credit and current model, with ruby/amber/jade/gold gemstone tiers for a VIP feel. Shared as-is — please be patient if something is off.",
+  "description": "A personal-share quick balance viewer for DeepSeek Harness — balance, bonus credit, current model and the official peak/off-peak pricing period, with ruby/amber/jade/gold gemstone tiers for a VIP feel. Shared as-is — please be patient if something is off.",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -39,6 +39,7 @@
     "index.js",
     "client.js",
     "cordis.patch.yml",
+    "CHANGELOG.md",
     "locale/*.json",
     "icon.svg",
     "SECURITY.md"

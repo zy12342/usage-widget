@@ -1,6 +1,6 @@
 # Account Balance Quick View for DeepSeek Harness
 
-A quick balance viewer for DeepSeek Harness — good news for the balance-anxious. Click the sidebar badge for balance, bonus credit, current model and the platform usage shortcut; low balances are highlighted.
+A quick balance viewer for DeepSeek Harness — good news for the balance-anxious. The sidebar badge also shows the current official pricing period (peak / off-peak) without opening anything; click it for balance, bonus credit, current model, next price switch and the platform usage shortcut. Low balances are highlighted.
 
 > Formerly a context-usage widget. The Harness now renders its own context meter
 > below the composer and token-usage pills in the composer dock, so this widget
@@ -24,6 +24,7 @@ A quick balance viewer for DeepSeek Harness — good news for the balance-anxiou
   - current model,
   - a shortcut to the platform usage page.
 - **Live** — balance is refreshed when the popover opens and every 60 seconds.
+- **Pricing period** — the sidebar shows `高峰` (peak) or `空闲` (off-peak) in Beijing time, following the official Models & Pricing rules; the host re-syncs the public pricing page daily and retries hourly on failure. Peak hours are Mon–Fri 09:00–12:00 / 14:00–18:00 Beijing time, excluding Chinese public holidays; weekends and holidays are off-peak. The popover shows the next switch and the last official sync date.
 - **Theme-aware** — colors follow the active DSH theme; readable in light and dark modes.
 - **Safe by design** — every optional service is error-isolated; a failure shows a dash instead of blocking DSH.
 
@@ -64,10 +65,12 @@ After installing or updating, **quit DSH completely and reopen it** — client p
 | Data | Source | Notes |
 | --- | --- | --- |
 | Balance / bonus credit | DSH's built-in account service (`remote.account.getBalance`) | The same service DSH itself uses; the widget only formats the numbers |
+| Pricing period | Host route `/usage-widget/api/pricing` | Host fetches the public DeepSeek Models & Pricing page daily; a public holiday calendar is best-effort |
 | Platform usage link | DSH account state (`links.usageUrl`) | Only `http:` / `https:` URLs are rendered; opens with `noopener noreferrer` |
 | Current model | DSH's `modelSelection` conversation projection | Read locally; not uploaded |
 
-- The widget makes **no network requests of its own**, sends **no telemetry**, and stores **nothing** (no localStorage, cookies, files or credentials).
+- The client makes **no external network requests** and stores **nothing** (no localStorage, cookies, files or credentials).
+- The host module fetches only `api-docs.deepseek.com` (pricing page) and `timor.tech` (Chinese holiday calendar) to build the pricing-period badge; no account data is sent.
 - It reads **no API keys or account credentials**; profile fields (email, phone) are never requested or displayed.
 
 See [SECURITY.md](SECURITY.md) for the full security notes.

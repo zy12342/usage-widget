@@ -10,10 +10,12 @@
  * already renders its own context meter below the composer and token-usage
  * pills in the composer dock, so this widget owns the account side instead.
  *
- * Privacy / security: no direct network requests, no storage, no credential
- * reads. Balance comes from DSH's own account service; the external usage link
- * is http(s)-validated and opened with rel="noopener noreferrer". Every
- * consumer is error-isolated and degrades to a dash.
+ * Privacy / security: the client makes no external network requests and reads
+ * no credentials. Balance comes from DSH's own account service; the pricing
+ * period comes from this bundle's local /usage-widget/api/pricing route (the
+ * host fetches only the public DeepSeek docs and a holiday calendar). The
+ * external usage link is http(s)-validated and opened with rel="noopener
+ * noreferrer". Every consumer is error-isolated and degrades to a dash.
  */
 window.__ModuleLoader__.load({
   id: '@mark.zy/usage-widget',
@@ -27,6 +29,8 @@ window.__ModuleLoader__.load({
     let state = {
       modelSelection: undefined,
       balance: undefined,
+      pricing: undefined,
+      now: Date.now(),
       usageUrl: DEFAULT_USAGE_URL,
       open: false,
       anchor: undefined,
@@ -216,6 +220,81 @@ window.__ModuleLoader__.load({
       return (selection.lastUsed && selection.lastUsed.model) || (selection.next && selection.next.model) || null;
     }
 
+    // ------------------------------------------------------- pricing period
+    // Official rule (Beijing time): peak = Mon-Fri 09:00-12:00 and
+    // 14:00-18:00, excluding Chinese public holidays; everything else is
+    // off-peak. The schedule itself comes from the host's daily docs sync.
+    const SHANGHAI_TZ = 'Asia/Shanghai';
+    const WEEKDAY_NUMBER = { Sun: 7, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    const shanghaiFormat = new Intl.DateTimeFormat('en-CA', {
+      timeZone: SHANGHAI_TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', weekday: 'short', hour12: false,
+    });
+    const shanghaiClockFormat = new Intl.DateTimeFormat('en-GB', {
+      timeZone: SHANGHAI_TZ, hour: '2-digit', minute: '2-digit', hour12: false,
+    });
+
+    function shanghaiNow(date) {
+      const parts = {};
+      for (const part of shanghaiFormat.formatToParts(date)) parts[part.type] = part.value;
+      const hour = Number(parts.hour) % 24;
+      const minute = Number(parts.minute);
+      return {
+        dateKey: parts.year + '-' + parts.month + '-' + parts.day,
+        weekday: WEEKDAY_NUMBER[parts.weekday] || 0,
+        minutes: hour * 60 + minute,
+      };
+    }
+
+    function clockMinutes(value) {
+      const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || ''));
+      if (!match) return NaN;
+      return Number(match[1]) * 60 + Number(match[2]);
+    }
+
+    function pricingPeriod(pricing, date) {
+      if (!pricing || !Array.isArray(pricing.peakWindows) || pricing.peakWindows.length === 0) return null;
+      const now = shanghaiNow(date);
+      const weekdays = Array.isArray(pricing.weekdays) ? pricing.weekdays : [1, 2, 3, 4, 5];
+      const holidays = Array.isArray(pricing.holidays) ? pricing.holidays : [];
+      const holiday = holidays.indexOf(now.dateKey) >= 0;
+      const inWindow = pricing.peakWindows.some((range) => {
+        const start = clockMinutes(range && range.start);
+        const end = clockMinutes(range && range.end);
+        return Number.isFinite(start) && Number.isFinite(end) && now.minutes >= start && now.minutes < end;
+      });
+      const peak = weekdays.indexOf(now.weekday) >= 0 && !holiday && inWindow;
+      return { kind: peak ? 'peak' : 'off', holiday, now };
+    }
+
+    function nextPricingChange(pricing, date) {
+      const current = pricingPeriod(pricing, date);
+      if (!current) return null;
+      for (let offset = 1; offset <= 8 * 24 * 60; offset += 1) {
+        const at = new Date(date.getTime() + offset * 60000);
+        const next = pricingPeriod(pricing, at);
+        if (next && next.kind !== current.kind) return { at, kind: next.kind };
+      }
+      return null;
+    }
+
+    function formatShanghaiClock(date) {
+      try {
+        return shanghaiClockFormat.format(date);
+      } catch (_) {
+        return '';
+      }
+    }
+
+    function formatSyncedAt(ms) {
+      if (!ms) return '';
+      try {
+        return new Intl.DateTimeFormat(undefined, { month: '2-digit', day: '2-digit' }).format(new Date(ms));
+      } catch (_) {
+        return '';
+      }
+    }
+
     // --------------------------------------------------------------- shared
     /** Official DeepSeek Harness whale mark, filled with the tier's gem gradient. */
     const FISH_VIEWBOX = '0 0 23.16 17.04';
@@ -266,6 +345,31 @@ window.__ModuleLoader__.load({
   align-items: center; justify-content: center;
 }
 .dsh-usage-amt { font-weight: 600; }
+.dsh-usage-period {
+  display:inline-flex; align-items:center; gap:4px; height:18px; padding:0 6px; border-radius:999px;
+  font-size:10px; font-weight:650; line-height:1; white-space:nowrap; border:1px solid transparent;
+}
+.dsh-usage-period i, .dsh-usage-period-value i {
+  width:5px; height:5px; border-radius:50%; background:currentColor; flex:none;
+}
+.dsh-usage-period.peak {
+  color:#f59e0b;
+  background:color-mix(in srgb, #f59e0b 13%, transparent);
+  border-color:color-mix(in srgb, #f59e0b 30%, transparent);
+}
+.dsh-usage-period.off {
+  color:#10b981;
+  background:color-mix(in srgb, #10b981 13%, transparent);
+  border-color:color-mix(in srgb, #10b981 30%, transparent);
+}
+.dsh-usage-period-value { display:inline-flex; align-items:center; gap:5px; }
+.dsh-usage-sync {
+  display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px;
+  font-size:10px; color:var(--dsw-alias-label-tertiary, inherit);
+}
+.dsh-usage-sync a { color:var(--dsw-alias-brand-primary, inherit); text-decoration:none; }
+.dsh-usage-sync a:hover { text-decoration:underline; }
+
 
 /* Gemstone textures: every tier gets a dark rim, a bright body and a light
    window band. Text uses the same gradient via background-clip. */
@@ -346,7 +450,13 @@ window.__ModuleLoader__.load({
       const tier = balanceTier(parsed.wallets);
       const gem = gemClass(tier);
       const t = (props && props.t) || ((k) => k);
-      const title = parsed.normal ? t('balance') + ' ' + parsed.normal : t('balance');
+      const nowDate = new Date(snapshot.now || Date.now());
+      const period = pricingPeriod(snapshot.pricing, nowDate);
+      const next = period ? nextPricingChange(snapshot.pricing, nowDate) : null;
+      const periodLabel = period ? t(period.kind === 'peak' ? 'peak' : 'offPeak') : '';
+      const periodShort = period ? t(period.kind === 'peak' ? 'peakShort' : 'offPeakShort') : '';
+      const nextLabel = next ? t('nextChange') + ' ' + formatShanghaiClock(next.at) : '';
+      const title = [parsed.normal ? t('balance') + ' ' + parsed.normal : t('balance'), periodLabel, nextLabel].filter(Boolean).join(' · ');
       return h(
         'div',
         { className: 'dsh-usage-root' },
@@ -399,6 +509,17 @@ window.__ModuleLoader__.load({
           props && props.wide && parsed.normal
             ? h('span', { className: 'dsh-usage-amt ' + gem }, parsed.normal)
             : null,
+          period
+            ? h(
+                'span',
+                {
+                  className: 'dsh-usage-period ' + (period.kind === 'peak' ? 'peak' : 'off'),
+                  title: periodLabel + (nextLabel ? ' · ' + nextLabel : ''),
+                },
+                h('i'),
+                periodShort,
+              )
+            : null,
         ),
       );
     }
@@ -411,6 +532,11 @@ window.__ModuleLoader__.load({
       const tier = balanceTier(parsed.wallets);
       const gem = gemClass(tier);
       const model = modelLabel(snapshot.modelSelection);
+      const nowDate = new Date(snapshot.now || Date.now());
+      const period = pricingPeriod(snapshot.pricing, nowDate);
+      const next = period ? nextPricingChange(snapshot.pricing, nowDate) : null;
+      const periodLabel = period ? t(period.kind === 'peak' ? 'peak' : 'offPeak') : '';
+      const periodShort = period ? t(period.kind === 'peak' ? 'peakShort' : 'offPeakShort') : '';
       const anchor = snapshot.anchor;
       let cardStyle;
       if (anchor) {
@@ -450,6 +576,22 @@ window.__ModuleLoader__.load({
             h('span', null, t('model')),
             h('b', { className: model ? '' : 'dsh-usage-empty' }, model || '—'),
           ),
+          period
+            ? h(
+                'div',
+                { className: 'dsh-usage-row' },
+                h('span', null, t('pricingPeriod')),
+                h('b', { className: 'dsh-usage-period-value ' + (period.kind === 'peak' ? 'peak' : 'off') }, h('i'), periodLabel),
+              )
+            : null,
+          next
+            ? h(
+                'div',
+                { className: 'dsh-usage-row' },
+                h('span', null, t('nextChange')),
+                h('b', null, formatShanghaiClock(next.at) + ' · ' + t(next.kind === 'peak' ? 'peakShort' : 'offPeakShort')),
+              )
+            : null,
           h('div', { className: 'dsh-usage-sep' }),
           h(
             'a',
@@ -461,6 +603,26 @@ window.__ModuleLoader__.load({
             },
             t('platformUsage') + ' ›',
           ),
+          snapshot.pricing
+            ? h(
+                'div',
+                { className: 'dsh-usage-sync' },
+                h(
+                  'span',
+                  null,
+                  t('officialSync') +
+                    (formatSyncedAt(snapshot.pricing.fetchedAt) ? ' · ' + formatSyncedAt(snapshot.pricing.fetchedAt) : '') +
+                    (snapshot.pricing.stale ? ' · ' + t('stalePricing') : ''),
+                ),
+                snapshot.pricing.source
+                  ? h(
+                      'a',
+                      { href: safeExternalUrl(snapshot.pricing.source) || undefined, target: '_blank', rel: 'noopener noreferrer' },
+                      t('pricingDoc') + ' ›',
+                    )
+                  : null,
+              )
+            : null,
         ),
       );
     }
@@ -498,6 +660,15 @@ window.__ModuleLoader__.load({
                 bonus: 'Bonus credit',
                 model: 'Model',
                 lowBalance: 'Low balance',
+                pricingPeriod: 'Pricing period',
+                nextChange: 'Next change',
+                officialSync: 'Official pricing synced',
+                pricingDoc: 'Models & pricing',
+                stalePricing: 'stale data',
+                peak: 'Peak hours',
+                offPeak: 'Off-peak hours',
+                peakShort: 'Peak',
+                offPeakShort: 'Off-peak',
                 platformUsage: 'Platform usage',
               },
               zh: {
@@ -506,6 +677,15 @@ window.__ModuleLoader__.load({
                 bonus: '赠送额度',
                 model: '模型',
                 lowBalance: '余额偏低',
+                pricingPeriod: '计费时段',
+                nextChange: '下次切换',
+                officialSync: '官方价格同步',
+                pricingDoc: '模型 & 价格',
+                stalePricing: '旧数据',
+                peak: '高峰时段',
+                offPeak: '空闲时段',
+                peakShort: '高峰',
+                offPeakShort: '空闲',
                 platformUsage: '平台用量',
               },
             }),
@@ -574,6 +754,36 @@ window.__ModuleLoader__.load({
         }, 'usage-widget: balance timer');
       } catch (error) {
         warn('balance', error);
+      }
+
+      // Local host route: official pricing schedule + holiday calendar, synced
+      // by the host from the public docs. Never contacts external sites directly.
+      try {
+        const loadPricing = () => {
+          if (typeof fetch !== 'function') return;
+          fetch('/usage-widget/api/pricing', { headers: { accept: 'application/json' } })
+            .then((response) => (response.ok ? response.json() : null))
+            .then((data) => {
+              if (data && data.ok !== false) setState({ pricing: data });
+            })
+            .catch(() => {});
+        };
+        loadPricing();
+        ctx.effect(() => {
+          const id = setInterval(loadPricing, 15 * 60 * 1000);
+          return () => clearInterval(id);
+        }, 'usage-widget: pricing poll');
+      } catch (error) {
+        warn('pricing', error);
+      }
+
+      try {
+        ctx.effect(() => {
+          const id = setInterval(() => setState({ now: Date.now() }), 30000);
+          return () => clearInterval(id);
+        }, 'usage-widget: clock');
+      } catch (error) {
+        warn('clock', error);
       }
 
       const register = (slot, options, component) => {
