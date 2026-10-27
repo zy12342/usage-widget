@@ -352,17 +352,26 @@ window.__ModuleLoader__.load({
 .dsh-usage-period i, .dsh-usage-period-value i {
   width:5px; height:5px; border-radius:50%; background:currentColor; flex:none;
 }
+.dsh-usage-period {
+  color:#ffffff;
+  background:#343a46;
+  border-color:#596272;
+}
 .dsh-usage-period.peak {
-  color:#f59e0b;
-  background:color-mix(in srgb, #f59e0b 13%, transparent);
-  border-color:color-mix(in srgb, #f59e0b 30%, transparent);
+  color:#ffffff;
+  background:#8a4b06;
+  border-color:#f59e0b;
 }
 .dsh-usage-period.off {
-  color:#10b981;
-  background:color-mix(in srgb, #10b981 13%, transparent);
-  border-color:color-mix(in srgb, #10b981 30%, transparent);
+  color:#ffffff;
+  background:#0b5d4b;
+  border-color:#34d399;
 }
+.dsh-usage-period.peak i { background:#fbbf24; }
+.dsh-usage-period.off i { background:#34d399; }
 .dsh-usage-period-value { display:inline-flex; align-items:center; gap:5px; }
+.dsh-usage-period-value.peak i { background:#f59e0b; }
+.dsh-usage-period-value.off i { background:#10b981; }
 .dsh-usage-sync {
   display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px;
   font-size:10px; color:var(--dsw-alias-label-tertiary, inherit);
@@ -379,20 +388,40 @@ window.__ModuleLoader__.load({
   color: transparent; -webkit-text-fill-color: transparent;
 }
 .dsh-gem-low {
-  background-image: linear-gradient(120deg, #4a0a14 0%, #e11d48 26%, #fecdd3 48%, #9f1239 70%, #fb7185 88%, #7f1d1d 100%);
-  filter: drop-shadow(0 0 7px rgba(225, 29, 72, .45));
+  background-image: linear-gradient(120deg,
+    color-mix(in srgb, #fb7185 55%, var(--dsw-alias-label-primary, #fff) 45%) 0%,
+    color-mix(in srgb, #fecdd3 50%, var(--dsw-alias-label-primary, #fff) 50%) 25%,
+    color-mix(in srgb, #e11d48 55%, var(--dsw-alias-label-primary, #fff) 45%) 50%,
+    color-mix(in srgb, #fda4af 50%, var(--dsw-alias-label-primary, #fff) 50%) 75%,
+    color-mix(in srgb, #be123c 55%, var(--dsw-alias-label-primary, #fff) 45%) 100%);
+  filter: drop-shadow(0 0 7px rgba(225, 29, 72, .4));
 }
 .dsh-gem-warn {
-  background-image: linear-gradient(120deg, #4a2600 0%, #f59e0b 26%, #fef3c7 48%, #b45309 70%, #fbbf24 88%, #78350f 100%);
-  filter: drop-shadow(0 0 7px rgba(245, 158, 11, .45));
+  background-image: linear-gradient(120deg,
+    color-mix(in srgb, #fbbf24 55%, var(--dsw-alias-label-primary, #fff) 45%) 0%,
+    color-mix(in srgb, #fef3c7 50%, var(--dsw-alias-label-primary, #fff) 50%) 25%,
+    color-mix(in srgb, #d97706 55%, var(--dsw-alias-label-primary, #fff) 45%) 50%,
+    color-mix(in srgb, #fcd34d 50%, var(--dsw-alias-label-primary, #fff) 50%) 75%,
+    color-mix(in srgb, #b45309 55%, var(--dsw-alias-label-primary, #fff) 45%) 100%);
+  filter: drop-shadow(0 0 7px rgba(245, 158, 11, .4));
 }
 .dsh-gem-mid {
-  background-image: linear-gradient(120deg, #022c22 0%, #10b981 26%, #d1fae5 48%, #047857 70%, #34d399 88%, #064e3b 100%);
-  filter: drop-shadow(0 0 7px rgba(16, 185, 129, .45));
+  background-image: linear-gradient(120deg,
+    color-mix(in srgb, #34d399 50%, var(--dsw-alias-label-primary, #fff) 50%) 0%,
+    color-mix(in srgb, #d1fae5 45%, var(--dsw-alias-label-primary, #fff) 55%) 25%,
+    color-mix(in srgb, #059669 55%, var(--dsw-alias-label-primary, #fff) 45%) 50%,
+    color-mix(in srgb, #6ee7b7 48%, var(--dsw-alias-label-primary, #fff) 52%) 75%,
+    color-mix(in srgb, #047857 55%, var(--dsw-alias-label-primary, #fff) 45%) 100%);
+  filter: drop-shadow(0 0 7px rgba(16, 185, 129, .4));
 }
 .dsh-gem-high {
-  background-image: linear-gradient(120deg, #5c3b00 0%, #d4a017 14%, #fff4c2 30%, #b8860b 46%, #ffd700 62%, #fffbe0 76%, #c99700 90%, #7a5200 100%);
-  filter: drop-shadow(0 0 9px rgba(255, 196, 54, .5));
+  background-image: linear-gradient(120deg,
+    color-mix(in srgb, #fde68a 50%, var(--dsw-alias-label-primary, #fff) 50%) 0%,
+    color-mix(in srgb, #fffbe0 45%, var(--dsw-alias-label-primary, #fff) 55%) 25%,
+    color-mix(in srgb, #d4a017 55%, var(--dsw-alias-label-primary, #fff) 45%) 50%,
+    color-mix(in srgb, #ffd700 50%, var(--dsw-alias-label-primary, #fff) 50%) 75%,
+    color-mix(in srgb, #b8860b 55%, var(--dsw-alias-label-primary, #fff) 45%) 100%);
+  filter: drop-shadow(0 0 9px rgba(255, 196, 54, .45));
   animation: dsh-gold-shine 5s ease-in-out infinite;
 }
 @keyframes dsh-gold-shine {
