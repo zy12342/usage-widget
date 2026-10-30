@@ -12,6 +12,12 @@ A quick balance viewer for DeepSeek Harness — good news for the balance-anxiou
 
 ![badge](icon.svg)
 
+## Screenshots
+
+![Sidebar badge](assets/screenshots/badge.png)
+
+![Balance card](assets/screenshots/card.png)
+
 > The icon uses the DeepSeek Harness brand whale mark (a Harness plugin borrowing the Harness brand artwork).
 
 ## What it shows
